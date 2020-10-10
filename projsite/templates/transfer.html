@@ -1,0 +1,39 @@
+{% extends "base_page.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    {% load static %}
+    <div id="dialogs-title">
+        <span>Переводы</span>
+    </div>
+    <div id="dialogs-list">
+        <div class="transaction_form">
+           <form method="post">{% csrf_token %}
+               <p>Введите адрес отправителя</p>
+               <div class="sender_addr">
+                    <input type="text"  name="to" id="se_address" value="{{ user_login.address }}" disabled/>
+                    <div class="container">
+                      <button class="clip_btn">
+                          <img src="../static/images/copy.svg" alt="Snow">
+                      </button>
+                    </div>
+               </div>
+               <div class="re_address_row">
+                   <p>Введите адрес получателя</p>
+                    <input type="text" name="to" id="re_address">
+               </div>
+               <div class="private_key_row">
+                   <p>Введите приватный ключ</p>
+                    <input type="password" name="private_key" id="private_key">
+               </div>
+               <div class="amount_row">
+                   <p>Количество</p>
+                   <input type="text" name="amount" id="amount">
+               </div>
+               <button id="transfer">Перевести</button>
+            </form>
+
+        </div>
+    </div>
+    <div id="footer-form"></div>
+    <script src="{% static 'js/transactions.js' %}"></script>
+{% endblock %}

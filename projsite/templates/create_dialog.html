@@ -1,0 +1,22 @@
+{% extends "base_page.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    {% load static %}
+    <div id="dialogs-title">
+        <span>Ваши диалоги</span>
+        <div id="new-dialog-container">
+            <a href="{% url 'create_dialog' %}">+</a>
+        </div>
+    </div>
+    <div id="dialogs-list">
+        <div class="create_dialog settings_form">
+           <form method="post">{% csrf_token %}
+                <p>Введите логин собеседника</p>
+                <input type="text" name="reciever" id="reciever">
+                <button id="send_create_dialog">Cоздать</button>
+            </form>
+        </div>
+    </div>
+    <div id="footer-form"></div>
+    <script src="{% static 'js/load_dialogs.js' %}"></script>
+{% endblock %}

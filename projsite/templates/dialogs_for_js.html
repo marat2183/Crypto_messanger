@@ -1,0 +1,27 @@
+        {% for i in Dialogs %}
+
+            <div class="dialog">
+                {% if user_login.login == i.reciever %}
+                        <div class="dialog_info">
+                            <a href="/dialogs?did={{ i.did }}">
+                                <img src="{{i.get_avatar.0}}">
+                                <div class="dialog_user_info">
+                                    <p class="rec_name">{{ i.sender }}</p>
+                                    <p class="last_mes">{{i.last_mes}}</p>
+                                </div>
+                            </a>
+                        </div>
+                {% else %}
+                        <div class="dialog_info">
+                            <a href="/dialogs?did={{ i.did }}">
+                                <img src="{{ i.get_avatar.1 }}">
+                                <div class="dialog_user_info">
+                                    <p class="rec_name">{{ i.reciever }}</p>
+                                    <p class="last_mes">{{i.last_mes}}</p>
+                                </div>
+                            </a>
+                        </div>
+                {% endif %}
+            </div>
+
+        {% endfor %}

@@ -1,0 +1,33 @@
+{% extends "base_page.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    {% load static %}
+    <div id="dialogs-title">
+        <span>Настройки</span>
+    </div>
+    <div id="dialogs-list">
+        <div class="settings_form">
+            <p id="settings_title_item_first">Получение закрытого ключа</p>
+           <div class="settings_form_item">
+                <form method="post">{% csrf_token %}
+                    <p>Файл c ключом</p>
+                    <input type="file" name="to" id="key_file">
+                    <p>Пароль</p>
+                    <input type="password" name="to" id="file_pass">
+                   <button id="get_key">Получить ключ</button>
+                </form>
+           </div>
+            <div id="myKey"></div>
+            <p id="settings_title_item_second">Обновление фото профиля</p>
+            <div class="settings_form_item">
+                <form method="post" enctype="multipart/form-data">{% csrf_token %}
+                    <p>Фото профиля</p>
+                    <input type="file" name="to" id="image_file">
+                    <button id="load_image">Загрузить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="footer-form"></div>
+    <script src="{% static 'js/settings.js' %}"></script>
+{% endblock %}

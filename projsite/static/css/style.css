@@ -1,0 +1,47 @@
+body{
+    /*background-color: #D3D3D3;*/
+}
+.reg_form{
+	height: 100vh;
+}
+#login_row input:focus,#password_row input:focus{
+    border: 0.2px solid rgba(154, 18, 179, 0.2);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(154, 18, 179, 0.3);
+}
+#password_confirm_row input:focus{
+    border: 0.2px solid rgba(154, 18, 179, 0.2);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(154, 18, 179, 0.3);
+}
+#reg_data_send, #send_data{
+	margin-top: 35px;
+	background-color: darkviolet;
+    border-color: darkviolet;
+}
+#reg_data_send:hover, #send_data:hover{
+    cursor: pointer;
+    background-color: rgba(148,0,211, 0.9);
+}
+#reg_data_send:focus{
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(154, 18, 179, 0.3);
+}
+#send_data:focus{
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(154, 18, 179, 0.3);
+}
+#log_link{
+    color: darkviolet;
+}
+
+#confirm_password_form_invalid, #login_form_invalid, #password_form_invalid, #form_invalid {
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+#myLink{
+    text-align: center;
+}
+
