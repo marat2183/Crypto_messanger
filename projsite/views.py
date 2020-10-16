@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpRequest
 from django.views.decorators.http import require_GET
 from django.db.models import Q
+import os
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -25,22 +26,17 @@ def check_crypto(word, key, user_login):
     secret_key = key.lower()
     encrypted = word
     encrypted = encrypted.split(':')
-    # We decode the two bits independently
     nonce = b64decode(encrypted[0])
     encrypted = b64decode(encrypted[1])
-    # We create a SecretBox, making sure that out secret_key is in bytes
     box = SecretBox(bytes(secret_key, encoding='utf8'))
     try:
         decrypted = box.decrypt(encrypted, nonce).decode('utf-8')
-        print(decrypted)
         if decrypted == authorization_queue[user_login]:
             result = True
             del authorization_queue[user_login]
-            print(authorization_queue)
         else:
             result = False
             del authorization_queue[user_login]
-            print(authorization_queue)
     except:
         result = False
     return result
@@ -55,472 +51,474 @@ def generate_secret(user_login):
         out_str += chr(a)
     secret_message = out_str
     authorization_queue[user_login] = secret_message
-    print(authorization_queue)
     return secret_message
 
 def getBalance(user_address):
     infura_url = 'https://ropsten.infura.io/v3/b70352c9625a4e9fb70c4a533997ade1'
     web3 = Web3(Web3.HTTPProvider(infura_url))
-    abi = json.loads(
-        '''[
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "name",
-		"outputs": [
-			{
-				"name": "",
-				"type": "string"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"name": "tokens",
-				"type": "uint256"
-			}
-		],
-		"name": "approve",
-		"outputs": [
-			{
-				"name": "success",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "totalSupply",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"name": "tokens",
-				"type": "uint256"
-			}
-		],
-		"name": "transferFrom",
-		"outputs": [
-			{
-				"name": "success",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "decimals",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint8"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "_totalSupply",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "tokenOwner",
-				"type": "address"
-			}
-		],
-		"name": "balanceOf",
-		"outputs": [
-			{
-				"name": "balance",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [],
-		"name": "acceptOwnership",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "symbol",
-		"outputs": [
-			{
-				"name": "",
-				"type": "string"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "a",
-				"type": "uint256"
-			},
-			{
-				"name": "b",
-				"type": "uint256"
-			}
-		],
-		"name": "safeSub",
-		"outputs": [
-			{
-				"name": "c",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "pure",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"name": "tokens",
-				"type": "uint256"
-			}
-		],
-		"name": "transfer",
-		"outputs": [
-			{
-				"name": "success",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "a",
-				"type": "uint256"
-			},
-			{
-				"name": "b",
-				"type": "uint256"
-			}
-		],
-		"name": "safeDiv",
-		"outputs": [
-			{
-				"name": "c",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "pure",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"name": "tokens",
-				"type": "uint256"
-			},
-			{
-				"name": "data",
-				"type": "bytes"
-			}
-		],
-		"name": "approveAndCall",
-		"outputs": [
-			{
-				"name": "success",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "a",
-				"type": "uint256"
-			},
-			{
-				"name": "b",
-				"type": "uint256"
-			}
-		],
-		"name": "safeMul",
-		"outputs": [
-			{
-				"name": "c",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "pure",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "newOwner",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "tokenAddress",
-				"type": "address"
-			},
-			{
-				"name": "tokens",
-				"type": "uint256"
-			}
-		],
-		"name": "transferAnyERC20Token",
-		"outputs": [
-			{
-				"name": "success",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "tokenOwner",
-				"type": "address"
-			},
-			{
-				"name": "spender",
-				"type": "address"
-			}
-		],
-		"name": "allowance",
-		"outputs": [
-			{
-				"name": "remaining",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "a",
-				"type": "uint256"
-			},
-			{
-				"name": "b",
-				"type": "uint256"
-			}
-		],
-		"name": "safeAdd",
-		"outputs": [
-			{
-				"name": "c",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "pure",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_newOwner",
-				"type": "address"
-			}
-		],
-		"name": "transferOwnership",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"payable": true,
-		"stateMutability": "payable",
-		"type": "fallback"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"name": "_from",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"name": "_to",
-				"type": "address"
-			}
-		],
-		"name": "OwnershipTransferred",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"name": "tokens",
-				"type": "uint256"
-			}
-		],
-		"name": "Transfer",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"name": "tokenOwner",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"name": "tokens",
-				"type": "uint256"
-			}
-		],
-		"name": "Approval",
-		"type": "event"
-	}
-]''')
+#     abi = json.loads(
+#         '''[
+# 	{
+# 		"constant": true,
+# 		"inputs": [],
+# 		"name": "name",
+# 		"outputs": [
+# 			{
+# 				"name": "",
+# 				"type": "string"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": false,
+# 		"inputs": [
+# 			{
+# 				"name": "spender",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"name": "tokens",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "approve",
+# 		"outputs": [
+# 			{
+# 				"name": "success",
+# 				"type": "bool"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "nonpayable",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [],
+# 		"name": "totalSupply",
+# 		"outputs": [
+# 			{
+# 				"name": "",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": false,
+# 		"inputs": [
+# 			{
+# 				"name": "from",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"name": "to",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"name": "tokens",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "transferFrom",
+# 		"outputs": [
+# 			{
+# 				"name": "success",
+# 				"type": "bool"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "nonpayable",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [],
+# 		"name": "decimals",
+# 		"outputs": [
+# 			{
+# 				"name": "",
+# 				"type": "uint8"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [],
+# 		"name": "_totalSupply",
+# 		"outputs": [
+# 			{
+# 				"name": "",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [
+# 			{
+# 				"name": "tokenOwner",
+# 				"type": "address"
+# 			}
+# 		],
+# 		"name": "balanceOf",
+# 		"outputs": [
+# 			{
+# 				"name": "balance",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": false,
+# 		"inputs": [],
+# 		"name": "acceptOwnership",
+# 		"outputs": [],
+# 		"payable": false,
+# 		"stateMutability": "nonpayable",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [],
+# 		"name": "owner",
+# 		"outputs": [
+# 			{
+# 				"name": "",
+# 				"type": "address"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [],
+# 		"name": "symbol",
+# 		"outputs": [
+# 			{
+# 				"name": "",
+# 				"type": "string"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [
+# 			{
+# 				"name": "a",
+# 				"type": "uint256"
+# 			},
+# 			{
+# 				"name": "b",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "safeSub",
+# 		"outputs": [
+# 			{
+# 				"name": "c",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "pure",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": false,
+# 		"inputs": [
+# 			{
+# 				"name": "to",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"name": "tokens",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "transfer",
+# 		"outputs": [
+# 			{
+# 				"name": "success",
+# 				"type": "bool"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "nonpayable",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [
+# 			{
+# 				"name": "a",
+# 				"type": "uint256"
+# 			},
+# 			{
+# 				"name": "b",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "safeDiv",
+# 		"outputs": [
+# 			{
+# 				"name": "c",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "pure",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": false,
+# 		"inputs": [
+# 			{
+# 				"name": "spender",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"name": "tokens",
+# 				"type": "uint256"
+# 			},
+# 			{
+# 				"name": "data",
+# 				"type": "bytes"
+# 			}
+# 		],
+# 		"name": "approveAndCall",
+# 		"outputs": [
+# 			{
+# 				"name": "success",
+# 				"type": "bool"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "nonpayable",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [
+# 			{
+# 				"name": "a",
+# 				"type": "uint256"
+# 			},
+# 			{
+# 				"name": "b",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "safeMul",
+# 		"outputs": [
+# 			{
+# 				"name": "c",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "pure",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [],
+# 		"name": "newOwner",
+# 		"outputs": [
+# 			{
+# 				"name": "",
+# 				"type": "address"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": false,
+# 		"inputs": [
+# 			{
+# 				"name": "tokenAddress",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"name": "tokens",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "transferAnyERC20Token",
+# 		"outputs": [
+# 			{
+# 				"name": "success",
+# 				"type": "bool"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "nonpayable",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [
+# 			{
+# 				"name": "tokenOwner",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"name": "spender",
+# 				"type": "address"
+# 			}
+# 		],
+# 		"name": "allowance",
+# 		"outputs": [
+# 			{
+# 				"name": "remaining",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "view",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": true,
+# 		"inputs": [
+# 			{
+# 				"name": "a",
+# 				"type": "uint256"
+# 			},
+# 			{
+# 				"name": "b",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "safeAdd",
+# 		"outputs": [
+# 			{
+# 				"name": "c",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"payable": false,
+# 		"stateMutability": "pure",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"constant": false,
+# 		"inputs": [
+# 			{
+# 				"name": "_newOwner",
+# 				"type": "address"
+# 			}
+# 		],
+# 		"name": "transferOwnership",
+# 		"outputs": [],
+# 		"payable": false,
+# 		"stateMutability": "nonpayable",
+# 		"type": "function"
+# 	},
+# 	{
+# 		"inputs": [],
+# 		"payable": false,
+# 		"stateMutability": "nonpayable",
+# 		"type": "constructor"
+# 	},
+# 	{
+# 		"payable": true,
+# 		"stateMutability": "payable",
+# 		"type": "fallback"
+# 	},
+# 	{
+# 		"anonymous": false,
+# 		"inputs": [
+# 			{
+# 				"indexed": true,
+# 				"name": "_from",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"indexed": true,
+# 				"name": "_to",
+# 				"type": "address"
+# 			}
+# 		],
+# 		"name": "OwnershipTransferred",
+# 		"type": "event"
+# 	},
+# 	{
+# 		"anonymous": false,
+# 		"inputs": [
+# 			{
+# 				"indexed": true,
+# 				"name": "from",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"indexed": true,
+# 				"name": "to",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"indexed": false,
+# 				"name": "tokens",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "Transfer",
+# 		"type": "event"
+# 	},
+# 	{
+# 		"anonymous": false,
+# 		"inputs": [
+# 			{
+# 				"indexed": true,
+# 				"name": "tokenOwner",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"indexed": true,
+# 				"name": "spender",
+# 				"type": "address"
+# 			},
+# 			{
+# 				"indexed": false,
+# 				"name": "tokens",
+# 				"type": "uint256"
+# 			}
+# 		],
+# 		"name": "Approval",
+# 		"type": "event"
+# 	}
+# ]''')
+    dir =  os.path.join(os.path.dirname(os.path.dirname(__file__)),'projsite/abi.txt')
+    with open(dir) as f:
+        abi = json.loads(f.read())
+
     address = web3.toChecksumAddress("0x7cb53602e6407c9126c3261a26a55004d0398606")
     contract = web3.eth.contract(address=address, abi=abi)
     balance = contract.functions.balanceOf(user_address).call()
     result = int(web3.fromWei(balance, 'ether') * 10 ** 11)
-    print(result)
     return result
-# @require_GET
+
 def index(request):
     if 'user_id' in request.session.keys():
         return redirect('dialogs')
@@ -604,7 +602,6 @@ def login(request):
         return redirect('dialogs')
     else:
         if request.method == 'POST' and 'login' in request.POST.keys() and 'password' in request.POST.keys() and 'key_valid' in request.POST.keys():
-            print(secret_message)
             user_login = request.POST['login']
             user_password = request.POST['password']
             word = request.POST['key_valid']
@@ -613,12 +610,10 @@ def login(request):
                 (Q(login=user_login)) & (Q(password=user_password))
             )
             user_address = res.address[2:34]
-            print("Адрес", user_address)
             key_vaild = check_crypto(word, user_address, user_login)
             if res and key_vaild:
                 request.session['user_id'] = res.id
                 request.session['public_key'] = res.address
-                print('address', request.session['public_key'])
                 data = {'message': 'ok'}
                 return HttpResponse(json.dumps(data), content_type='application/json')
             else:
@@ -700,7 +695,7 @@ def dialogs(request):
                 res = res.order_by('-did')
                 for i in res:
                     i.did = str(i.did)
-                # print(res[0].sender, res[0].last_mes())
+
                 return render(request, template_name='dialogs.html',
                               context={"title": 'Диалоги', "user_login": user_login, "Dialogs": res, "balance": balance})
             else:
@@ -709,11 +704,7 @@ def dialogs(request):
         return redirect('login')
 
 
-# def load_messages(request):
-#     did = request.GET['did']
-#     res = Messages.objects.get(did=did)
-#     print(res)
-#     return render(request, template_name='messages_page.html', context={"reciever": "Имя собеседника"})
+
 
 def create_dialog(request):
     if 'user_id' in request.session.keys():
@@ -729,7 +720,6 @@ def create_dialog(request):
                 res = res = Dialogs.objects.filter(
                     (Q(sender=sender)) & (Q(reciever=reciever)) | (Q(sender=reciever)) & (Q(reciever=sender))
                 )
-                print(res)
                 if not res:
                     dialog_data = Dialogs(sender=sender, reciever=reciever)
                     dialog_data.save()
@@ -765,7 +755,7 @@ def transfer(request):
 
 def settings(request):
     if 'user_id' in request.session.keys():
-        print(request.session['user_id'])
+
         info_balance = Users.objects.get(id=request.session['user_id'])
         balance = getBalance(info_balance.address)
         if request.method == 'GET':
@@ -786,7 +776,6 @@ def settings(request):
 def logout(request):
     if 'user_id' in request.session.keys():
         del request.session['user_id']
-        print(request.session.get('user_id'))
         return redirect('login')
     else:
         return redirect('login')
