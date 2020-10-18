@@ -1,27 +1,29 @@
 $(document).ready(function () {
     const web3 = new Web3(Web3.givenProvider || "https://ropsten.infura.io/v3/b70352c9625a4e9fb70c4a533997ade1")
     let currentLocation = window.location.href.toString().split(window.location.host)[1];
+
     function financialMfil(numMfil) {
         return Number.parseFloat(numMfil / 1e7).toFixed(7);
     }
+
     const updateBal = async (client_address) => {
         let contractAddress = "0x7cb53602e6407c9126c3261a26a55004d0398606";
         const contractABI = [
-              {
-                "constant":true,
-                "inputs":[{"name":"_owner","type":"address"}],
-                "name":"balanceOf",
-                "outputs":[{"name":"balance","type":"uint256"}],
-                "type":"function"
-              },
-              {
-                "constant":true,
-                "inputs":[],
-                "name":"decimals",
-                "outputs":[{"name":"","type":"uint8"}],
-                "type":"function"
-              }
-            ];
+            {
+                "constant": true,
+                "inputs": [{"name": "_owner", "type": "address"}],
+                "name": "balanceOf",
+                "outputs": [{"name": "balance", "type": "uint256"}],
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "decimals",
+                "outputs": [{"name": "", "type": "uint8"}],
+                "type": "function"
+            }
+        ];
         let contract = new web3.eth.Contract(contractABI, contractAddress, {
             from: client_address
         });
@@ -31,8 +33,9 @@ $(document).ready(function () {
         const bal = document.querySelector('#user_balance')
         bal.textContent = user_balance
     }
+
     function updateBalance() {
-         $.ajax({
+        $.ajax({
             type: "POST",
             url: '/transfer/',
             dataType: 'json',
@@ -42,10 +45,10 @@ $(document).ready(function () {
             }
         });
     }
+
     $('#send_create_dialog').click(function (event) {
         event.preventDefault();
         let reciever = $('#reciever').val();
-        console.log(reciever);
         $.ajax({
             type: "POST",
             url: '/dialogs/create/',
@@ -53,17 +56,12 @@ $(document).ready(function () {
             data: {reciever: reciever, csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},
             success: function (data) {
                 if (data.message == 'ok') {
-                    console.log(data.message)
                     document.location.href = '/dialogs/';
-                }
-                else
-                {
+                } else {
                     $(".create_dialog").append("<div id='create_form_invalid'></div>");
                     $("#create_form_invalid").text(`${data.message}`);
                     $("#create_form_invalid").fadeIn(1000).delay(1500).fadeOut(1000);
 
-
-                    // document.location.href = '/dialogs/create';
                 }
             }
         });
