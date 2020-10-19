@@ -5,10 +5,10 @@ $(document).ready(function () {
     var error_password = false;
     var error_file = false;
 
-    $("#login").focusout(function () {
+    $("#login").keyup(function () {
         check_login();
     });
-    $("#password").focusout(function () {
+    $("#password").keyup(function () {
         check_password();
     });
     $("#key").change(function () {
